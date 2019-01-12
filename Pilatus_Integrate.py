@@ -1,9 +1,12 @@
 import numpy as np
 from scipy.optimize import curve_fit
 import scipy.interpolate as interpolate
-from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('WX')
+import matplotlib.pyplot as plt
 import gc
 
+stepsize = 0.005   #define this here so that it may be reset by Pilatus_Integration_setup if desired
 from Pilatus_Integration_setup import *
 mult = 10000000.0
 
@@ -15,7 +18,7 @@ def read_TIFF(file):
         arr = np.fromstring(im.read(), dtype='int32')
         im.close()
         arr.shape = (195, 487)
-        arr = np.fliplr(arr)  #for the way mounted at BL2-1
+        #arr = np.fliplr(arr)  #for the way mounted at BL2-1
         return arr
     except:
         print "Error reading file: %s" % file
@@ -28,7 +31,7 @@ def read_RAW(file, mask = True):
         arr = np.fromstring(im.read(), dtype='int32')
         im.close()
         arr.shape = (195, 487)
-        arr = np.fliplr(arr)               # for the way mounted at BL2-1
+        #arr = np.fliplr(arr)               # for the way mounted at BL2-1
         if mask:
             for i in xrange(0, 10):
                 arr[:,i] = -2.0
@@ -119,7 +122,8 @@ db_y = int(line.split()[-1])
 line = cal.readline()
 det_R = float(line.split()[-1])
 cal.close()
-db_pixel = [487-db_x, db_y]  #This line is important for the way the detector is mounted at BL2-1
+db_pixel = [db_x, db_y]
+#db_pixel = [487-db_x, db_y]  #This line is important for the way the detector is mounted at BL2-1
 
 # Map each pixel into cartesian coordinates (x,y,z) in number of pixels from sample for direct beam conditions (2-theta = 0)
 # We only need to do this once, so we can be inefficient about it
@@ -162,11 +166,10 @@ x = []
 y = []
 xmax_global = 0.0  #set this to some small number so that it gets reset with the first image
 xmin_global = 180.0
-stepsize = 0.01
 bins = np.arange(0.0, 180.0, stepsize)
 digit_y = np.zeros_like(bins)
 digit_norm = np.zeros_like(bins)
-for k in range(0, len(tth)):
+for k in range(1, len(tth)):
     x = []
     y = []
     print k
@@ -197,7 +200,7 @@ interp = interpolate.InterpolatedUnivariateSpline(bins[nonzeros], digit_y[nonzer
 interpbins = np.arange(min(bins[nonzeros]), max(bins[nonzeros]), stepsize)
 interpy = interp(interpbins)
 
-outname = spec_path + spec_name + "scan" + str(scan_number) + ".xye"
+outname = spec_path + spec_name + "_scan" + str(scan_number) + ".xye"
 outfile = open(outname, "w")
 for i in xrange(0, len(interpbins)):
     outfile.write(str(interpbins[i]) + "\t" + str(mult * interpy[i]) + "\t" + str(np.sqrt(mult * interpy[i])) + "\n")
