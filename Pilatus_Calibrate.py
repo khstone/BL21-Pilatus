@@ -12,7 +12,7 @@ def read_TIFF(file):
         arr = np.fromstring(im.read(), dtype='int32')
         im.close()
         arr.shape = (195, 487)
-        arr = np.fliplr(arr)  #for the way mounted at BL2-1
+        #arr = np.fliplr(arr)  #for the way mounted at old BL2-1
         print np.shape(arr)
         print len(arr)
         return arr
@@ -27,7 +27,7 @@ def read_RAW(file):
         arr = np.fromstring(im.read(), dtype='int32')
         im.close()
         arr.shape = (195, 487)
-        arr = np.fliplr(arr)  #for the way mounted at BL2-1
+        #arr = np.fliplr(arr)  #for the way mounted at old BL2-1
         return arr
     except:
         print "Error reading file: %s" % file
@@ -68,7 +68,7 @@ def simple_line(x, m, b):
 # Read CSV file, get step size and number of points in scan
 x, y, i0 = csvread(csv_path + csv_name)
 num_points = len(x)
-calib_tth_steps = (x[-1] - x[0])/num_points
+calib_tth_steps = abs(x[1] - x[0])
 x = []
 y = []
 i0 = []
