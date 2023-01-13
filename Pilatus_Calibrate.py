@@ -5,36 +5,34 @@ from matplotlib import pyplot as plt
 from Pilatus_Calibration_setup import *
 
 def read_TIFF(file):
-    print "Reading TIFF file here..."
+    print("Reading TIFF file here...")
     try:
         im = open(file, 'rb')
         im.seek(4096)	# skip the first 4096 bytes of header info for TIFF images
         arr = np.fromstring(im.read(), dtype='int32')
         im.close()
         arr.shape = (195, 487)
-        #arr = np.fliplr(arr)  #for the way mounted at old BL2-1
-        print np.shape(arr)
-        print len(arr)
+        #arr = np.fliplr(arr)  #uncomment if detector is mounted upside down
         return arr
     except:
-        print "Error reading file: %s" % file
+        print("Error reading file: %s" % file)
         return None
 
-def read_RAW(file):
-    print "Reading RAW file here..."
+def read_RAW(file, mask = True):
+    print("Reading RAW file here...")
     try:
         im = open(file, 'rb')
         arr = np.fromstring(im.read(), dtype='int32')
         im.close()
         arr.shape = (195, 487)
-        #arr = np.fliplr(arr)  #for the way mounted at old BL2-1
+        #arr = np.fliplr(arr)               #uncomment if detector is mounted upside down
         return arr
     except:
-        print "Error reading file: %s" % file
+        print("Error reading file: %s" % file)
         return None
 
 def csvread(filename):  
-    print "Reading CSV file here..."
+    print("Reading CSV file here...")
     csv = open(filename)
     line = csv.readline()
     temp = line.split(',')
@@ -75,7 +73,7 @@ i0 = []
 
 # Read images, take line cut, fit feature position for calibration scan
 pks = []
-for i in xrange(0, num_points):
+for i in range(0, num_points):
     filename = data_path + calib_name + str(i).zfill(4) + ".raw"
     data = read_RAW(filename)
     x = np.arange(0, np.shape(data)[1])
@@ -91,8 +89,8 @@ for i in xrange(0, num_points):
 x = np.arange(num_points)
 lin_fit, pcov = curve_fit(simple_line, pks, x*calib_tth_steps + 0.00)
 det_R = 1.0/np.tan(abs(lin_fit[0])*np.pi/180.0)     # sample to detector distance in pixels
-print "Sample to detector distance in pixels = " + str(det_R)
-print "Sample to detector distance in mm = " + str((det_R * pix_size / 1000.0))
+print("Sample to detector distance in pixels = " + str(det_R))
+print("Sample to detector distance in mm = " + str((det_R * pix_size / 1000.0)))
 plt.figure()
 plt.plot(pks, x*calib_tth_steps, 'b.')
 plt.plot(pks, lin_fit[0]*pks + lin_fit[1], 'r-')
